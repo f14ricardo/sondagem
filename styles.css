@@ -1,0 +1,30 @@
+.table th {
+    background-color: #f0f0a0;
+    text-align: center;
+    font-size: 14px;
+}
+
+#conceitual {
+    background-color: #ff9292;
+}
+
+#repertorio {
+    background-color: #4ECDC4;
+}
+
+#escrita {
+    background-color: #74C69D;
+}
+
+.table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.grafico-container {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+/* Adicione seus estilos personalizados abaixo */

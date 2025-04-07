@@ -1,47 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tabela de Sondagem - Adição de Alunos</title>
+    <title>Tabela de Sondagem - 2º Ano A</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="container mt-4">
-        <h2 class="text-center mb-4">Tabela de Sondagem - 2º Ano A</h2>
-        
-        <div class="mb-4">
-            <input type="file" id="importFile" accept=".xml" class="form-control" />
-            <div class="d-flex gap-2 mt-2">
-                <button id="importButton" class="btn btn-primary flex-grow-1">Importar</button>
-                <button id="exportButton" class="btn btn-success flex-grow-1">Exportar</button>
+
+<body class="bg-light">
+    <div class="container mt-4 bg-white p-4 shadow rounded">
+        <div class="text-center">
+            <img class="img-fluid mx-auto d-block" src="https://logodownload.org/wp-content/uploads/2016/10/sesi-logo.png" width="200px" alt="">
+            <h1 class="text-danger">Tabela de Sondagem</h1>
+            <p><strong>CE113 - SESI MILTON SOBROSA - Mogi das Cruzes - SP</strong><br>
+               Periodicidade: Mensal</p>
+        </div>
+
+        <!-- Campo para adicionar aluno -->
+        <div class="container-fluid px-0 text-center mb-4">
+            <div class="row mx-0">
+                <div class="col-12 d-flex flex-row justify-content-between align-items-center p-3 shadow rounded">
+                    <input type="text" id="nomeAluno" class="form-control w-50" placeholder="Digite o nome do aluno">
+                    <button class="btn btn-success flex-grow-1 mx-2" onclick="adicionarAluno()">+ Adicionar
+                        Aluno</button>
+                    <!-- Botão para acionar o PowerBI -->
+                    <button class="btn btn-primary flex-grow-1" id="btnResumo">Resumo Evolutivo</button>
+                </div>
             </div>
         </div>
 
-        <div class="mb-4">
-            <div class="d-flex gap-2">
-                <input type="text" id="nomeAluno" class="form-control" placeholder="Nome do Aluno" />
-                <button id="addButton" class="btn btn-info">Adicionar</button>
+        <!-- IMPORTAÇÃO / EXPORTAÇÃO -->
+        <div class="container-fluid px-0 text-center mb-4">
+            <div class="row mx-0">
+                <div class="col-12 d-flex flex-row justify-content-between align-items-center p-3 shadow rounded">
+                    <input type="file" id="importarXML" accept=".xml" class="form-control w-50 d-inline-block mb-2">
+                    <button class="btn btn-outline-primary flex-grow-1 mx-2" onclick="exportarXML()">📤 Exportar
+                        XML</button>
+                    <button class="btn btn-outline-success flex-grow-1 mx-2"
+                        onclick="document.getElementById('importarXML').click()">📥 Importar XML</button>
+                </div>
             </div>
         </div>
-        
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered" id="tabelaSondagem">
-                <thead class="table-dark">
+
+        <!-- TABELA -->
+        <div class="table-responsive">
+            <table class="table table-bordered text-center" id="tabelaAlunos">
+                <thead>
                     <tr>
-                        <th>#</th>
+                        <th>Nº</th>
                         <th>Nome do Aluno</th>
-                        <th>Pré<br>Silábico</th>
-                        <th>Silábico<br>sem valor<br>sonoro</th>
-                        <th>Silábico<br>com valor<br>sonoro</th>
-                        <th>Silábico<br>alfabético</th>
-                        <th>Pouco<br>Interesse</th>
-                        <th>Requer<br>Ajuda</th>
-                        <th>Requer Ajuda<br>e Atenção</th>
-                        <th>Autonomia<br>e Interesse</th>
-                        <th>Ações</th>
+                        <th id="conceitual">Pré-Silábico</th>
+                        <th id="conceitual">Silábico S/ Valor</th>
+                        <th id="conceitual">Silábico C/ Valor</th>
+                        <th id="conceitual">Silábico Alfabético</th>
+                        <th id="conceitual">Alfabético</th>
+                        <th id="repertorio">Apenas do Nome</th>
+                        <th id="repertorio">Apenas Vogais</th>
+                        <th id="repertorio">Apenas Consoantes</th>
+                        <th id="repertorio">Repertório Vasto</th>
+                        <th id="escrita">Pouco Interesse</th>
+                        <th id="escrita">Requer Ajuda</th>
+                        <th id="escrita">Requer Atenção</th>
+                        <th id="escrita">Autonomia e Interesse</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -49,43 +71,28 @@
                 </tbody>
             </table>
         </div>
-        
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Nível Conceitual (Barras)</h4>
-                        <canvas id="graficoNivelConceitual"></canvas>
-                    </div>
-                </div>
+
+        <!-- GRÁFICOS -->
+        <div class="row text-center mt-4">
+            <div class="col-md-4">
+                <h5>Nível Conceitual</h5>
+                <canvas id="graficoNiveis"></canvas>
             </div>
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Disponibilidade (Barras)</h4>
-                        <canvas id="graficoDisponibilidade"></canvas>
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <h5>Repertório de Letras</h5>
+                <canvas id="graficoRepertorio"></canvas>
             </div>
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Nível Conceitual (Pizza)</h4>
-                        <canvas id="graficoPizza"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h4 class="card-title text-center">Disponibilidade (Pizza)</h4>
-                        <canvas id="graficoPizzaDisponibilidade"></canvas>
-                    </div>
-                </div>
+            <div class="col-md-4">
+                <h5>Disponibilidade para Escrever</h5>
+                <canvas id="graficoDisponibilidade"></canvas>
             </div>
         </div>
     </div>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="script.js"></script>
 </body>
+
 </html>

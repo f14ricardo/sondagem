@@ -1,246 +1,270 @@
-// Inicialização dos gráficos
-const ctx1 = document.getElementById('graficoNivelConceitual').getContext('2d');
-const ctx2 = document.getElementById('graficoDisponibilidade').getContext('2d');
+// Variáveis globais
+let categorias = {
+    "Nível Conceitual": ["Pré-Silábico", "Silábico S/ Valor", "Silábico C/ Valor", "Silábico Alfabético", "Alfabético"],
+    "Repertório de Letras": ["Apenas do Nome", "Apenas Vogais", "Apenas Consoantes", "Repertório Vasto"],
+    "Disponibilidade para Escrever": ["Pouco Interesse", "Requer Ajuda", "Requer Atenção", "Autonomia e Interesse"]
+};
 
-const graficoNivelConceitual = new Chart(ctx1, {
-    type: 'bar',
-    data: {
-        labels: ['Pré Silábico', 'Silábico sem valor', 'Silábico com valor', 'Silábico alfabético'],
-        datasets: [{
-            label: 'Quantidade de Alunos',
-            data: [0, 0, 0, 0],
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(54, 162, 235, 0.7)',
-                'rgba(255, 206, 86, 0.7)',
-                'rgba(75, 192, 192, 0.7)'
-            ],
-            borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        }
-    }
-});
+let dados = {};
+Object.values(categorias).flat().forEach(cat => dados[cat] = 0);
 
-const graficoDisponibilidade = new Chart(ctx2, {
-    type: 'bar',
-    data: {
-        labels: ['Pouco Interesse', 'Requer Ajuda', 'Requer Ajuda e Atenção', 'Autonomia e Interesse'],
-        datasets: [{
-            label: 'Quantidade de Alunos',
-            data: [0, 0, 0, 0],
-            backgroundColor: [
-                'rgba(153, 102, 255, 0.7)',
-                'rgba(255, 159, 64, 0.7)',
-                'rgba(255, 99, 132, 0.7)',
-                'rgba(75, 192, 192, 0.7)'
-            ],
-            borderColor: [
-                'rgba(153, 102, 255, 1)',
-                'rgba(255, 159, 64, 1)',
-                'rgba(255, 99, 132, 1)',
-                'rgba(75, 192, 192, 1)'
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
-                }
-            }
-        }
-    }
-});
+let contador = 1;
+let graficos = {};
 
-// Função para atualizar os gráficos
-function updateCharts() {
-    const table = document.getElementById('tabelaSondagem');
-    const nivelConceitualData = [0, 0, 0, 0];
-    const disponibilidadeData = [0, 0, 0, 0];
+// Funções principais
+function adicionarAluno() {
+    let nomeInput = document.getElementById("nomeAluno");
+    let nome = nomeInput.value.trim();
+    if (nome === "") return;
 
-    for (let i = 1; i < table.rows.length; i++) {
-        const row = table.rows[i];
-        
-        if (row.cells[2].querySelector('input').checked) nivelConceitualData[0]++;
-        if (row.cells[3].querySelector('input').checked) nivelConceitualData[1]++;
-        if (row.cells[4].querySelector('input').checked) nivelConceitualData[2]++;
-        if (row.cells[5].querySelector('input').checked) nivelConceitualData[3]++;
-        
-        if (row.cells[6].querySelector('input').checked) disponibilidadeData[0]++;
-        if (row.cells[7].querySelector('input').checked) disponibilidadeData[1]++;
-        if (row.cells[8].querySelector('input').checked) disponibilidadeData[2]++;
-        if (row.cells[9].querySelector('input').checked) disponibilidadeData[3]++;
-    }
+    let tabela = document.getElementById("tabelaAlunos").querySelector("tbody");
+    let novaLinha = tabela.insertRow();
 
-    graficoNivelConceitual.data.datasets[0].data = nivelConceitualData;
-    graficoDisponibilidade.data.datasets[0].data = disponibilidadeData;
-    graficoNivelConceitual.update();
-    graficoDisponibilidade.update();
+    let colunas = [...categorias["Nível Conceitual"], ...categorias["Repertório de Letras"], ...categorias["Disponibilidade para Escrever"]];
+
+    novaLinha.innerHTML = `<td>${contador++}</td><td>${nome}</td>` +
+        colunas.map(categoria => `<td><input type="checkbox" class="nivel-checkbox" data-nivel="${categoria}"></td>`).join("");
+
+    nomeInput.value = "";
+    atualizarEventosCheckbox();
+    nomeInput.focus();
 }
 
-// Adicionar aluno ao pressionar Enter
-document.getElementById('nomeAluno').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        const nomeAluno = this.value.trim();
-        if (nomeAluno) {
-            document.getElementById('addButton').click();
-        } else {
-            alert('Por favor, insira o nome do aluno.');
+function atualizarEventosCheckbox() {
+    document.querySelectorAll(".nivel-checkbox").forEach(checkbox => {
+        checkbox.removeEventListener("change", checkboxEventListener);
+        checkbox.addEventListener("change", checkboxEventListener);
+    });
+}
+
+function checkboxEventListener() {
+    let nivel = this.dataset.nivel;
+    this.checked ? dados[nivel]++ : dados[nivel]--;
+
+    for (let categoria in graficos) {
+        if (categorias[categoria].includes(nivel)) {
+            graficos[categoria].data.datasets[0].data = categorias[categoria].map(l => dados[l]);
+            graficos[categoria].update();
         }
     }
-});
+}
 
-// Adicionar novo aluno
-document.getElementById('addButton').addEventListener('click', function() {
-    const nomeAluno = document.getElementById('nomeAluno').value.trim();
-    if (!nomeAluno) {
-        alert('Por favor, insira o nome do aluno.');
+function criarGrafico(canvasId, labels) {
+    let ctx = document.getElementById(canvasId).getContext("2d");
+    return new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: labels.map(l => dados[l]),
+                backgroundColor: ["#ff0000", "#f4a500", "#ffee00", "#9be56d", "#4285F4", "#43d36c", "#F4A142", "#A142F4"]
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#000',
+                    font: { weight: 'bold', size: 14 },
+                    formatter: (value) => value > 0 ? value : ''
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+// Evento de exportação
+
+function exportarXML() {
+    const linhas = document.querySelectorAll("#tabelaAlunos tbody tr");
+    if (linhas.length === 0) {
+        alert("Nenhum aluno para exportar.");
         return;
     }
 
-    const tableBody = document.querySelector("#tabelaSondagem tbody");
-    const row = tableBody.insertRow();
-    const rowIndex = tableBody.rows.length;
-    row.insertCell(0).innerText = rowIndex;
-    const nomeCell = row.insertCell(1);
-    nomeCell.innerText = nomeAluno;
-    nomeCell.style.textAlign = 'left';
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<alunos>\n`;
 
-    for (let i = 2; i <= 9; i++) {
-        const cell = row.insertCell(i);
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'form-check-input';
-        checkbox.addEventListener('change', updateCharts);
-        cell.appendChild(checkbox);
-    }
+    linhas.forEach(linha => {
+        const colunas = linha.querySelectorAll("td");
+        const nome = colunas[1].textContent;
+        
+        // Obtém TODOS os checkboxes (incluindo os que podem estar faltando)
+        const checkboxes = Array.from(linha.querySelectorAll("input[type='checkbox']"));
 
-    const cellAcoes = row.insertCell(10);
-    const btnExcluir = document.createElement('button');
-    btnExcluir.className = 'btn btn-danger btn-sm btn-excluir';
-    btnExcluir.innerHTML = 'Excluir';
-    btnExcluir.addEventListener('click', function() {
-        if (confirm(`Deseja realmente excluir o aluno ${nomeAluno}?`)) {
-            row.remove();
-            const rows = tableBody.querySelectorAll('tr');
-            rows.forEach((row, index) => {
-                row.cells[0].innerText = index + 1;
-            });
-            updateCharts();
-        }
-    });
-    cellAcoes.appendChild(btnExcluir);
+        xml += `  <aluno>\n    <nome>${escapeXML(nome)}</nome>\n`;
 
-    document.getElementById('nomeAluno').value = '';
-    updateCharts();
-});
-
-// Exportar para XML
-function exportTableToXML() {
-    const table = document.getElementById('tabelaSondagem');
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<alunos>\n';
-
-    for (let i = 1; i < table.rows.length; i++) {
-        const row = table.rows[i];
-        xml += '  <aluno>\n';
-        xml += `    <id>${row.cells[0].innerText}</id>\n`;
-        xml += `    <nome>${row.cells[1].innerText}</nome>\n`;
-
-        const columnNames = [
-            'pré_silábico', 'silábico_sem_valor_sonoro', 'silábico_com_valor_sonoro', 
-            'silábico_alfabético', 'pouco_interesse', 'requer_ajuda', 
-            'requer_ajuda_e_atencão', 'autonomia_e_interesse'
+        // Garante que todas as categorias definidas sejam exportadas
+        const todasCategorias = [
+            ...categorias["Nível Conceitual"],
+            ...categorias["Repertório de Letras"],
+            ...categorias["Disponibilidade para Escrever"]
         ];
 
-        for (let j = 0; j < columnNames.length; j++) {
-            xml += `    <${columnNames[j]}>${row.cells[j+2].querySelector('input').checked ? 'true' : 'false'}</${columnNames[j]}>\n`;
-        }
-        xml += '  </aluno>\n';
-    }
-    xml += '</alunos>';
+        todasCategorias.forEach(categoria => {
+            // Encontra o checkbox correspondente na linha
+            const checkbox = checkboxes.find(cb => cb.dataset.nivel === categoria);
+            const checked = checkbox ? checkbox.checked : false;
+            
+            const tag = formatarTagXML(categoria);
+            xml += `    <${tag}>${checked}</${tag}>\n`;
+        });
 
-    const blob = new Blob([xml], { type: 'text/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sondagem_alunos.xml';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+        xml += `  </aluno>\n`;
+    });
+
+    xml += `</alunos>`;
+
+    // Restante do código para download...
+    const blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "alunos_sondagem.xml";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
-// Importar de XML
-function importXML() {
-    const fileInput = document.getElementById('importFile');
-    const file = fileInput.files[0];
-    if (!file) {
-        alert('Por favor, selecione um arquivo XML para importar.');
-        return;
-    }
+// Função auxiliar para formatar tags XML corretamente
+function formatarTagXML(categoria) {
+    return categoria
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove acentos
+        .replace(/\s+/g, '_')
+        .replace(/[\/()]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/_$/, '');
+}
+
+// Função escapeXML permanece a mesma
+function escapeXML(str) {
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&apos;');
+}
+
+// Evento de importação
+document.getElementById("importarXML").addEventListener("change", function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = function(e) {
         try {
             const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(event.target.result, "text/xml");
-            const alunos = xmlDoc.getElementsByTagName("aluno");
+            const xmlDoc = parser.parseFromString(e.target.result, "application/xml");
 
-            const tableBody = document.querySelector("#tabelaSondagem tbody");
-            tableBody.innerHTML = '';
-
-            for (let i = 0; i < alunos.length; i++) {
-                const aluno = alunos[i];
-                const nome = aluno.getElementsByTagName("nome")[0]?.textContent || '';
-                
-                document.getElementById('nomeAluno').value = nome;
-                document.getElementById('addButton').click();
-                
-                const row = tableBody.rows[tableBody.rows.length - 1];
-                
-                const columnNames = [
-                    'pré_silábico', 'silábico_sem_valor_sonoro', 'silábico_com_valor_sonoro', 
-                    'silábico_alfabético', 'pouco_interesse', 'requer_ajuda', 
-                    'requer_ajuda_e_atencão', 'autonomia_e_interesse'
-                ];
-
-                for (let j = 0; j < columnNames.length; j++) {
-                    const field = aluno.getElementsByTagName(columnNames[j])[0];
-                    if (field) {
-                        row.cells[j+2].querySelector('input').checked = field.textContent === 'true';
-                    }
-                }
+            if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+                throw new Error("Erro na análise do XML");
             }
 
-            updateCharts();
-            alert('Dados importados com sucesso!');
+            document.querySelector("#tabelaAlunos tbody").innerHTML = "";
+            contador = 1;
+            Object.keys(dados).forEach(key => dados[key] = 0);
+
+            const alunos = xmlDoc.getElementsByTagName("aluno");
+            if (alunos.length === 0) {
+                alert("Nenhum aluno encontrado no XML.");
+                return;
+            }
+
+            // Mapeamento especial para tags problemáticas
+            const tagMapping = {
+                "Silabico_S_Valor": "Silábico S/ Valor",
+                "Silabico_C_Valor": "Silábico C/ Valor",
+                "Silabico_Alfabetico": "Silábico Alfabético",
+                "Pre-Silabico": "Pré-Silábico",
+                "Alfabetico": "Alfabético",
+                "Repertorio_Vasto": "Repertório Vasto",
+                "Requer_Atencao": "Requer Atenção"
+            };
+
+            for (let aluno of alunos) {
+                const nome = aluno.getElementsByTagName("nome")[0]?.textContent;
+                if (!nome) continue;
+
+                const novaLinha = document.querySelector("#tabelaAlunos tbody").insertRow();
+                novaLinha.innerHTML = `<td>${contador++}</td><td>${nome}</td>`;
+
+                const todasCategorias = [
+                    ...categorias["Nível Conceitual"],
+                    ...categorias["Repertório de Letras"],
+                    ...categorias["Disponibilidade para Escrever"]
+                ];
+
+                todasCategorias.forEach((categoria) => {
+                    const cell = novaLinha.insertCell();
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.className = "nivel-checkbox";
+                    checkbox.dataset.nivel = categoria;
+
+                    // Encontra o nome da tag no XML (com mapeamento especial)
+                    let tagProcurada = categoria;
+                    
+                    // Verifica se há um mapeamento especial para esta categoria
+                    for (const [xmlTag, mappedCat] of Object.entries(tagMapping)) {
+                        if (mappedCat === categoria) {
+                            tagProcurada = xmlTag;
+                            break;
+                        }
+                    }
+
+                    // Converte para o formato do XML (sem acentos, com underscores)
+                    tagProcurada = tagProcurada
+                        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                        .replace(/\s+/g, '_')
+                        .replace(/[\/()]/g, '_');
+
+                    // Procura a tag no XML
+                    let marcado = false;
+                    for (let node of aluno.children) {
+                        if (node.nodeName.toLowerCase() === tagProcurada.toLowerCase()) {
+                            marcado = node.textContent === "true";
+                            break;
+                        }
+                    }
+
+                    checkbox.checked = marcado;
+                    if (marcado) {
+                        dados[categoria]++;
+                    }
+                    
+                    cell.appendChild(checkbox);
+                });
+            }
+
+            atualizarEventosCheckbox();
+            atualizarTodosGraficos();
+
         } catch (error) {
-            alert('Erro ao importar o arquivo XML: ' + error.message);
+            console.error("Erro na importação:", error);
+            alert("Erro ao importar XML: " + error.message);
         }
     };
     reader.readAsText(file);
+});
+
+function atualizarTodosGraficos() {
+    for (let categoria in graficos) {
+        graficos[categoria].data.datasets[0].data = categorias[categoria].map(l => dados[l]);
+        graficos[categoria].update();
+    }
 }
 
-// Event listeners para botões
-document.getElementById('exportButton').addEventListener('click', exportTableToXML);
-document.getElementById('importButton').addEventListener('click', importXML);
+// Inicialização
+document.addEventListener("DOMContentLoaded", () => {
+    graficos["Nível Conceitual"] = criarGrafico("graficoNiveis", categorias["Nível Conceitual"]);
+    graficos["Repertório de Letras"] = criarGrafico("graficoRepertorio", categorias["Repertório de Letras"]);
+    graficos["Disponibilidade para Escrever"] = criarGrafico("graficoDisponibilidade", categorias["Disponibilidade para Escrever"]);
+
+    document.getElementById("nomeAluno").focus();
+
+    document.getElementById("nomeAluno").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            adicionarAluno();
+        }
+    });
+});
