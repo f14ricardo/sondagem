@@ -140,3 +140,27 @@
     background-color: #0056b3;
     transform: scale(1.03);
 }
+
+@media (max-width: 576px) {
+  .col-12.d-flex {
+    flex-direction: column !important;
+    gap: 10px;
+    align-items: stretch !important;
+  }
+
+  .col-12.d-flex input[type="text"],
+  .col-12.d-flex input[type="file"],
+  .col-12.d-flex button,
+  .col-12.d-flex a {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .col-12.d-flex a > button {
+    width: 100% !important;
+  }
+
+  .col-12.d-flex input[type="file"] {
+    margin-top: 8px !important;
+  }
+}
