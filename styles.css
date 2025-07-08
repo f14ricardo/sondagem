@@ -164,3 +164,19 @@
     margin-top: 8px !important;
   }
 }
+
+.btn-powerbi {
+    background-color: #fbbc05; /* amarelo Power BI */
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease-in-out;
+}
+
+.btn-powerbi:hover {
+    background-color: #e5ac00;
+    transform: scale(1.03);
+}
