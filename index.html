@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -23,10 +24,11 @@
             <div class="row mx-0">
                 <div class="col-12 d-flex flex-row justify-content-between align-items-center p-3 shadow rounded">
                     <input type="text" id="nomeAluno" class="form-control w-50" placeholder="Digite o nome do aluno">
-                    <button class="btn btn-success flex-grow-1 mx-2" onclick="adicionarAluno()">+ Adicionar
-                        Aluno</button>
+                    <button class="btn btn-adicionar flex-grow-1 mx-2" onclick="adicionarAluno()">➕ Adicionar Aluno</button>
                     <!-- Botão para acionar o PowerBI -->
-                    <a href="https://forms.office.com/r/b163kCKfaK"><button class="btn btn-primary flex-grow-1" id="btnResumo">Resumo Evolutivo</button></a>
+                    <a href="https://forms.office.com/r/b163kCKfaK" target="_blank">
+                        <button class="btn btn-resumo flex-grow-1">📊 Resumo Evolutivo</button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -46,7 +48,8 @@
 
         <!-- TABELA -->
         <div class="table-responsive">
-            <table class="table table-bordered text-center" id="tabelaAlunos">
+            <div class="scrollable-table table-responsive">
+    <table class="table table-bordered text-center" id="tabelaAlunos">
                 <thead>
                     <tr>
                         <th>Nº</th>
@@ -70,6 +73,13 @@
                     <!-- Alunos serão adicionados aqui -->
                 </tbody>
             </table>
+            <div class="text-end mt-3">
+    <button class="btn btn-outline-danger" onclick="window.print()">
+        🖨️ Imprimir Tabela / Salvar em PDF
+    </button>
+</div>
+
+    </div>
         </div>
 
         <!-- GRÁFICOS -->
